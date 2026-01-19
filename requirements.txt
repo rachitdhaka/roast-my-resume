@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+pydantic-ai
+openai
+python-multipart
+python-dotenv

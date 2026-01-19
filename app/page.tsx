@@ -1,65 +1,106 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { Flame, Loader2 } from "lucide-react";
+import RoastResult from "../components/RoastResult";
 
 export default function Home() {
+  const [resumeText, setResumeText] = useState("");
+  const [jobDescription, setJobDescription] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const handleRoast = async () => {
+    if (!resumeText) return;
+
+    setLoading(true);
+    setResult(null);
+
+    try {
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          resume_text: resumeText,
+          job_description: jobDescription || "General Application",
+        }),
+      });
+
+      const data = await response.json();
+      setResult(data);
+    } catch (error) {
+      console.error("Roast failed:", error);
+      alert(
+        "Something went wrong. The AI refused to roast you (or the server crashed).",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="w-full max-w-5xl px-4 py-20 flex flex-col items-center min-h-screen">
+      {/* Header */}
+      <div className="text-center mb-16 space-y-4">
+        <div className="inline-flex items-center justify-center p-3 bg-slate-900 rounded-full mb-4 ring-1 ring-slate-800">
+          <Flame className="w-8 h-8 text-orange-500" />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <h1 className="text-5xl md:text-7xl font-bold tracking-tighter bg-gradient-to-r from-emerald-400 to-cyan-500 bg-clip-text text-transparent">
+          Roast My Resume
+        </h1>
+        <p className="text-slate-400 text-lg max-w-xl mx-auto">
+          Paste your resume and the job description. We'll destroy your ego, but
+          help you get hired.
+        </p>
+      </div>
+
+      {/* Input Section */}
+      {!result && (
+        <div className="w-full max-w-3xl space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-400 ml-1">
+                Paste Resume
+              </label>
+              <textarea
+                className="w-full h-64 p-4 bg-slate-900 border border-slate-800 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all resize-none text-slate-300 placeholder:text-slate-600 font-mono text-sm leading-relaxed"
+                placeholder="Paste your full resume text here..."
+                value={resumeText}
+                onChange={(e) => setResumeText(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-400 ml-1">
+                Job Description
+              </label>
+              <textarea
+                className="w-full h-64 p-4 bg-slate-900 border border-slate-800 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all resize-none text-slate-300 placeholder:text-slate-600 font-mono text-sm leading-relaxed"
+                placeholder="Which job are you applying for? (Optional)"
+                value={jobDescription}
+                onChange={(e) => setJobDescription(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <button
+            onClick={handleRoast}
+            disabled={loading || !resumeText}
+            className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-bold text-lg rounded-xl transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            {loading ? (
+              <>
+                <Loader2 className="animate-spin" /> Roasting...
+              </>
+            ) : (
+              "🔥 Roast Me"
+            )}
+          </button>
         </div>
-      </main>
-    </div>
+      )}
+
+      {/* Results Section */}
+      {result && <RoastResult result={result} />}
+    </main>
   );
 }
