@@ -7,7 +7,7 @@ import os
 # Load environment variables (for local dev)
 load_dotenv()
 
-# Import agent after loading env vars to ensuring OPENROUTER_API_KEY is available
+# Import agent after loading env vars to ensure OPENROUTER_API_KEY is available
 from .agent import agent
 
 app = FastAPI()
@@ -33,10 +33,12 @@ async def analyze_resume(request: RoastRequest):
             f"Job Description:\n{request.job_description}"
         )
         
-        # Run the agent synchronously (Vercel serverless functions work best with sync entry points or standard async)
-        # pydantic_ai's run_sync is useful here
+        # Run the agent synchronously
         result = agent.run_sync(user_prompt)
         
         return result.data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# Vercel requires 'handler' to be the ASGI app
+handler = app
