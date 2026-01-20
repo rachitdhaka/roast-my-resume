@@ -8,7 +8,7 @@ import os
 load_dotenv()
 
 # Import agent after loading env vars to ensuring OPENROUTER_API_KEY is available
-from api.agent import agent
+from .agent import agent
 
 app = FastAPI()
 
